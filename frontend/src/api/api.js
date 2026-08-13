@@ -1,11 +1,21 @@
 import axios from 'axios';
 
-const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+const normalizeApiUrl = (value) => {
+  const raw = (value || '').trim();
+  if (!raw) return 'http://localhost:5000/api';
+
+  const withoutTrailingSlash = raw.replace(/\/+$/, '');
+  return /\/api(?:\/)?$/i.test(withoutTrailingSlash)
+    ? withoutTrailingSlash
+    : `${withoutTrailingSlash}/api`;
+};
+
+const configuredApiUrl = normalizeApiUrl(import.meta.env.VITE_API_URL);
 const isLocalHost = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
-let API_BASE = configuredApiUrl || 'http://localhost:5000/api';
+let API_BASE = configuredApiUrl;
 
-if (!configuredApiUrl && !isLocalHost) {
+if (!import.meta.env.VITE_API_URL && !isLocalHost) {
   console.error('Missing VITE_API_URL in production. Set your Render backend URL in the Vercel project environment variables.');
 }
 

@@ -19,7 +19,7 @@ app.use(helmet({
 app.set('trust proxy', 1);
 
 // Middleware
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const CLIENT_URL = (process.env.CLIENT_URL || 'http://localhost:5173').trim().replace(/\/+$/, '');
 // Accept requests from the configured client URL plus common local dev hosts and Vercel deployments.
 const allowedOrigins = new Set([
   CLIENT_URL,
@@ -31,7 +31,9 @@ app.use(cors({
   origin: (origin, cb) => {
     // allow non-browser requests (curl, Postman) with no origin
     if (!origin) return cb(null, true);
-    if (allowedOrigins.has(origin)) return cb(null, true);
+
+    const normalizedOrigin = origin.replace(/\/+$/, '');
+    if (allowedOrigins.has(normalizedOrigin)) return cb(null, true);
 
     try {
       const hostname = new URL(origin).hostname;
