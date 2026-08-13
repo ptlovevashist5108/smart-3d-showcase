@@ -9,13 +9,25 @@ export default function ProductShowcase({ limit }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    let active = true;
+
     getProducts()
       .then((res) => {
+        if (!active) return;
         const data = limit ? res.data.slice(0, limit) : res.data;
         setProducts(data);
       })
-      .catch(() => setError('Could not load products. Is the backend running?'))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!active) return;
+        setError('Could not load products. Is the backend running?');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [limit]);
 
   if (loading) {

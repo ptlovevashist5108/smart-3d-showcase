@@ -20,7 +20,7 @@ app.set('trust proxy', 1);
 
 // Middleware
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
-// Accept requests from the configured client URL plus common local dev hosts
+// Accept requests from the configured client URL plus common local dev hosts and Vercel deployments.
 const allowedOrigins = new Set([
   CLIENT_URL,
   'http://localhost:5173',
@@ -32,8 +32,22 @@ app.use(cors({
     // allow non-browser requests (curl, Postman) with no origin
     if (!origin) return cb(null, true);
     if (allowedOrigins.has(origin)) return cb(null, true);
-    // Allow any localhost/127.0.0.1/192.168 network addresses in development
-    if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('192.168'))) return cb(null, true);
+
+    try {
+      const hostname = new URL(origin).hostname;
+      if (
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname.endsWith('.vercel.app') ||
+        hostname.endsWith('.netlify.app') ||
+        /^192\.168\./.test(hostname)
+      ) {
+        return cb(null, true);
+      }
+    } catch {
+      // ignore invalid origin strings and reject below
+    }
+
     return cb(new Error('Not allowed by CORS'));
   }
 }));

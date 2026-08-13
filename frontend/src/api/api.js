@@ -1,17 +1,21 @@
 import axios from 'axios';
 
-let API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+const isLocalHost = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
-// If running the frontend from another device (phone) but the API_BASE
-// still points to localhost, replace localhost with the current host so
-// resources (like /uploads/...) resolve to the dev machine's IP.
+let API_BASE = configuredApiUrl || 'http://localhost:5000/api';
+
+if (!configuredApiUrl && !isLocalHost) {
+  console.error('Missing VITE_API_URL in production. Set your Render backend URL in the Vercel project environment variables.');
+}
+
+// Keep local dev behavior for phone testing, but do not silently rewrite a production URL to localhost.
 try {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && isLocalHost) {
     const locHost = window.location.hostname;
-      if (locHost && locHost !== 'localhost') {
-        // Replace common local hostnames so the backend is reachable from other devices
-        API_BASE = API_BASE.replace(/localhost|127\.0\.0\.1/g, locHost);
-      }
+    if (locHost && locHost !== 'localhost') {
+      API_BASE = API_BASE.replace(/localhost|127\.0\.0\.1/g, locHost);
+    }
   }
 } catch (e) {
   // ignore - keep default

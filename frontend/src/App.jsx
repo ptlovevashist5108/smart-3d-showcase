@@ -58,14 +58,22 @@ function HomePage() {
   };
 
   useEffect(() => {
-    getPublicProfile().then((res) => {
-      const admin = res.data.admin || {};
-      const photoPath = admin.boss_photo || '';
-      const finalUrl = photoPath ? `${SERVER_BASE}${photoPath}` : '';
-      console.debug('Public profile:', admin, 'Computed boss photo URL:', finalUrl);
-      setBossPhoto(finalUrl);
-      setBossName(admin.name || 'Your Boss’s Name');
-    }).catch(() => {});
+    let active = true;
+
+    getPublicProfile()
+      .then((res) => {
+        if (!active) return;
+        const admin = res.data.admin || {};
+        const photoPath = admin.boss_photo || '';
+        const finalUrl = photoPath ? `${SERVER_BASE}${photoPath}` : '';
+        setBossPhoto(finalUrl);
+        setBossName(admin.name || 'Your Boss’s Name');
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -83,7 +91,15 @@ function HomePage() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('clientReviews', JSON.stringify(testimonials));
+    try {
+      const nextValue = JSON.stringify(testimonials);
+      const saved = localStorage.getItem('clientReviews');
+      if (saved !== nextValue) {
+        localStorage.setItem('clientReviews', nextValue);
+      }
+    } catch {
+      // ignore storage errors
+    }
   }, [testimonials]);
 
   const stats = [
