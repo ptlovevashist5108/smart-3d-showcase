@@ -51,4 +51,5 @@ const ensureSchema = async () => {
   }
 };
 
-module.exports = { db, ensureSchema };
+module.exports = db;
+module.exports.ensureSchema = ensureSchema;

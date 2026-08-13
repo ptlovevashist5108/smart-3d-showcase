@@ -8,7 +8,8 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const contactRoutes = require('./routes/contact');
 const uploadRoutes = require('./routes/upload');
-const { db, ensureSchema } = require('./config/db');
+const db = require('./config/db');
+const ensureSchema = db.ensureSchema;
 
 const app = express();
 
