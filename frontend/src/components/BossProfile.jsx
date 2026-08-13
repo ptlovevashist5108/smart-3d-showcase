@@ -1,6 +1,21 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
+const fallbackBossSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+    <defs>
+      <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0%" stop-color="#f472b6"/>
+        <stop offset="100%" stop-color="#38bdf8"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="320" fill="#0f172a"/>
+    <circle cx="160" cy="118" r="54" fill="url(#g)" opacity="0.9"/>
+    <path d="M92 260c16-42 44-64 68-64s52 22 68 64" fill="url(#g)" opacity="0.9"/>
+    <text x="160" y="292" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#ffffff">Boss</text>
+  </svg>
+`)}`;
+
 export default function BossProfile({ bossPhoto, bossName, bossTitle, onPhotoChange, onNameChange, uploading, message, nameMessage }) {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(bossName || '');
@@ -29,10 +44,11 @@ export default function BossProfile({ bossPhoto, bossName, bossTitle, onPhotoCha
               <div className="absolute inset-0 rounded-full border border-white/10 shadow-[0_0_60px_rgba(56,189,248,0.16)]" />
               <div className="relative rounded-full overflow-hidden border-4 border-white/10 w-44 h-44 bg-slate-900 shadow-[0_0_60px_rgba(236,72,153,0.25)]">
                 <img
-                  src={bossPhoto || '/boss.jpg'}
+                  src={bossPhoto || fallbackBossSvg}
                   alt="Boss"
                   onError={(e) => {
-                    e.currentTarget.src = 'https://via.placeholder.com/300?text=Boss+Photo';
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = fallbackBossSvg;
                   }}
                   loading="lazy"
                   className="h-full w-full object-cover"

@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const contactRoutes = require('./routes/contact');
 const uploadRoutes = require('./routes/upload');
+const { db, ensureSchema } = require('./config/db');
 
 const app = express();
 
@@ -74,7 +75,19 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found.' });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-});
+const PORT = Number(process.env.PORT || 5000);
+
+(async () => {
+  try {
+    await db.getConnection();
+    await ensureSchema();
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Cannot start server: database connection failed.');
+    console.error('Reason:', err.message);
+    console.error('Check Render env vars: DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME');
+    process.exit(1);
+  }
+})();
