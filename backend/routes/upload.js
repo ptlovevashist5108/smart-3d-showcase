@@ -1,19 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+const CloudinaryStorage = require('multer-storage-cloudinary');
 const sharp = require('sharp');
 const verifyToken = require('../middleware/auth');
 const db = require('../config/db');
 
-// Store uploaded photos in /uploads with a unique filename
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads')),
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  }
+// Configure Cloudinary from environment variables
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Cloudinary storage — uploads directly to cloud
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'smart-3d-showcase', // organize uploads in this folder
+    resource_type: 'auto',
+    format: async (req, file) => {
+      // Keep original format (jpg, png, webp)
+      const mime = file.mimetype.split('/')[1];
+      return ['jpeg', 'png', 'webp'].includes(mime) ? mime : 'jpg';
+    },
+    public_id: (req, file) => {
+      // unique name based on timestamp
+      return `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    },
+  },
 });
 
 const fileFilter = (req, file, cb) => {
@@ -28,27 +44,15 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB max
 
 // @route   POST /api/upload
-// @desc    Upload a service photo (admin only) — resize and return the URL
+// @desc    Upload a service photo (admin only) to Cloudinary — return the secure URL
 router.post('/', verifyToken, upload.single('photo'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded.' });
   }
 
-  const filePath = req.file.path;
-  const ext = path.extname(req.file.filename).toLowerCase();
-  const resizedPath = `${filePath}.tmp`;
-
   try {
-    // Resize to max width 1200 and overwrite
-    await sharp(filePath)
-      .resize({ width: 1200, withoutEnlargement: true })
-      .toFile(resizedPath);
-
-    // Replace original file with resized
-    fs.unlinkSync(filePath);
-    fs.renameSync(resizedPath, filePath);
-
-    const fileUrl = `/uploads/${req.file.filename}`;
+    // req.file.path contains the Cloudinary secure_url
+    const fileUrl = req.file.path; // Cloudinary's secure_url
 
     // Log audit
     try {
@@ -57,10 +61,10 @@ router.post('/', verifyToken, upload.single('photo'), async (req, res) => {
       console.error('Audit log failed:', e.message);
     }
 
-    res.status(201).json({ message: 'Photo uploaded.', url: fileUrl });
+    res.status(201).json({ message: 'Photo uploaded to Cloudinary.', url: fileUrl });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: 'Image processing failed.' });
+    return res.status(500).json({ message: 'Image upload to Cloudinary failed.' });
   }
 });
 

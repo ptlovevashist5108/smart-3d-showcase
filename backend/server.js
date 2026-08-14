@@ -57,10 +57,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Serve uploaded service photos
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Routes
+// Routes (Note: uploaded photos now served from Cloudinary)
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/contact', contactRoutes);
