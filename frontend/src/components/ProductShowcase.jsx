@@ -67,7 +67,7 @@ export default function ProductShowcase({ limit }) {
             <div className="relative overflow-hidden">
               {p.image_url ? (
                 <img
-                  src={`${SERVER_BASE}${p.image_url}`}
+                  src={p.image_url.startsWith('http://') || p.image_url.startsWith('https://') ? p.image_url : `${SERVER_BASE}${p.image_url}`}
                   alt={p.name}
                   className="h-[280px] w-full object-cover transition duration-500 group-hover:scale-110"
                 />

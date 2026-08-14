@@ -81,7 +81,13 @@ export default function AdminDashboard() {
   };
   const loadProfile = () => getProfile().then((res) => {
     const admin = res.data.admin;
-    setBossPhoto(admin.boss_photo ? `${SERVER_BASE}${admin.boss_photo}` : '');
+    // Check if URL is already absolute (Cloudinary) or relative (local)
+    const photoUrl = admin.boss_photo ? (
+      admin.boss_photo.startsWith('http://') || admin.boss_photo.startsWith('https://')
+        ? admin.boss_photo
+        : `${SERVER_BASE}${admin.boss_photo}`
+    ) : '';
+    setBossPhoto(photoUrl);
     setBossName(admin.name || 'Your Boss’s Name');
   }).catch(() => {});
 
@@ -146,7 +152,8 @@ export default function AdminDashboard() {
       const res = await uploadPhoto(file);
       const bossPhotoUrl = res.data.url;
       await updateBossPhoto(bossPhotoUrl);
-      setBossPhoto(`${SERVER_BASE}${bossPhotoUrl}`);
+      // URL from Cloudinary is already absolute, use as-is
+      setBossPhoto(bossPhotoUrl);
       setBossMsg('Boss photo updated ✓');
     } catch (err) {
       setBossMsg(err.response?.data?.message || 'Boss photo upload failed.');
@@ -303,7 +310,7 @@ export default function AdminDashboard() {
               {servicePhotoMsg && <p className="text-accent text-xs mt-1">{servicePhotoMsg}</p>}
               {form.image_url && (
                 <img
-                  src={`${SERVER_BASE}${form.image_url}`}
+                  src={form.image_url.startsWith('http://') || form.image_url.startsWith('https://') ? form.image_url : `${SERVER_BASE}${form.image_url}`}
                   alt="Preview"
                   className="mt-3 h-32 w-full object-cover rounded-lg border border-white/10"
                 />

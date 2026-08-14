@@ -65,7 +65,12 @@ function HomePage() {
         if (!active) return;
         const admin = res.data.admin || {};
         const photoPath = admin.boss_photo || '';
-        const finalUrl = photoPath ? `${SERVER_BASE}${photoPath}` : '';
+        // Check if URL is already absolute (Cloudinary) or relative (local)
+        const finalUrl = photoPath ? (
+          photoPath.startsWith('http://') || photoPath.startsWith('https://')
+            ? photoPath
+            : `${SERVER_BASE}${photoPath}`
+        ) : '';
         setBossPhoto(finalUrl);
         setBossName(admin.name || 'Your Boss’s Name');
       })
