@@ -58,8 +58,11 @@ export default function AdminDashboard() {
   const [bossTitle, setBossTitle] = useState('Founder & Head Coach');
   const [bossMsg, setBossMsg] = useState('');
   const [bossNameMsg, setBossNameMsg] = useState('');
-  const [servicePhotoMsg, setServicePhotoMsg] = useState('');  const [instagramUrl, setInstagramUrl] = useState('');
-  const [instagramMsg, setInstagramMsg] = useState('');  const [snapshotCaption, setSnapshotCaption] = useState('');
+  const [servicePhotoMsg, setServicePhotoMsg] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
+  const [instagramMsg, setInstagramMsg] = useState('');
+  const [snapshots, setSnapshots] = useState([]);
+  const [snapshotCaption, setSnapshotCaption] = useState('');
   const [snapshotMsg, setSnapshotMsg] = useState('');
   const navigate = useNavigate();
 
