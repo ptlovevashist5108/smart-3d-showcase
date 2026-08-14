@@ -64,6 +64,12 @@ export const updateBossName = (name) => api.put('/auth/boss-name', { name });
 export const getInstagramUrl = () => api.get('/auth/instagram');
 export const updateInstagramUrl = (instagram_url) => api.put('/auth/instagram', { instagram_url });
 
+export const getSnapshots = () => api.get('/snapshots');
+export const createSnapshot = (formData) => api.post('/snapshots', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const deleteSnapshot = (id) => api.delete(`/snapshots/${id}`);
+
 export const uploadPhoto = (file) => {
   const formData = new FormData();
   formData.append('photo', file);

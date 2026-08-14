@@ -10,7 +10,7 @@ import AdminDashboard from './components/AdminDashboard';
 import BossProfile from './components/BossProfile';
 import ContactModal from './components/ContactModal';
 import { useEffect, useState } from 'react';
-import { getPublicProfile, getInstagramUrl, SERVER_BASE } from './api/api';
+import { getPublicProfile, getInstagramUrl, getSnapshots, SERVER_BASE } from './api/api';
 
 const defaultReviews = [
   {
@@ -39,6 +39,7 @@ function HomePage() {
   const [bossTitle, setBossTitle] = useState('Founder & Head Coach');
   const [showModal, setShowModal] = useState(false);
   const [testimonials, setTestimonials] = useState(defaultReviews);  const [instagramUrl, setInstagramUrl] = useState('');
+  const [snapshots, setSnapshots] = useState([]);
   // Show modal on first visit unless user dismissed earlier
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -87,6 +88,21 @@ function HomePage() {
       .then((res) => {
         if (!active) return;
         setInstagramUrl(res.data.instagram_url || '');
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    getSnapshots()
+      .then((res) => {
+        if (!active) return;
+        setSnapshots(res.data || []);
       })
       .catch(() => {});
 
@@ -199,20 +215,30 @@ function HomePage() {
           <p className="text-xs uppercase tracking-[0.32em] text-pink-300">Progress snapshots</p>
           <h3 className="mt-4 text-4xl font-black text-white">Visible transformation, sustainable results</h3>
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          {transformations.map((item) => (
-            <div key={item.label} className={`rounded-[1.9rem] border border-white/10 bg-gradient-to-br ${item.color} p-[1px]`}>
-              <div className="rounded-[1.85rem] bg-slate-950/90 p-6">
-                <div className="mb-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-gray-300">
-                  {item.label}
+        {snapshots.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {snapshots.map((snapshot) => (
+              <div key={snapshot.id} className="rounded-[1.9rem] border border-white/10 overflow-hidden bg-slate-950/90 shadow-[0_20px_50px_rgba(15,23,42,0.5)]">
+                <div className="relative h-64 overflow-hidden bg-gradient-to-br from-slate-900 to-slate-950">
+                  <img
+                    src={snapshot.image_url.startsWith('http://') || snapshot.image_url.startsWith('https://') ? snapshot.image_url : `${SERVER_BASE}${snapshot.image_url}`}
+                    alt={snapshot.caption || 'Snapshot'}
+                    className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                  />
                 </div>
-                <div className="flex h-56 items-center justify-center rounded-[1.25rem] border border-dashed border-white/10 bg-white/5 text-center text-xl font-semibold text-white">
-                  {item.text}
-                </div>
+                {snapshot.caption && (
+                  <div className="p-4">
+                    <p className="text-sm text-gray-300 text-center">{snapshot.caption}</p>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[1.9rem] border border-dashed border-white/20 bg-white/5 p-12 text-center">
+            <p className="text-gray-400">Coming soon — check back for transformation snapshots</p>
+          </div>
+        )}
       </section>
 
       <ProductShowcase limit={3} />

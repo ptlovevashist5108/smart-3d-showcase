@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const contactRoutes = require('./routes/contact');
 const uploadRoutes = require('./routes/upload');
+const snapshotRoutes = require('./routes/snapshots');
 const db = require('./config/db');
 const ensureSchema = db.ensureSchema;
 
@@ -62,6 +63,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/snapshots', snapshotRoutes);
 
 // Health check
 app.get('/', (req, res) => {

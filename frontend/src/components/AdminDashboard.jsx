@@ -12,6 +12,9 @@ import {
   updateBossName,
   getInstagramUrl,
   updateInstagramUrl,
+  getSnapshots,
+  createSnapshot,
+  deleteSnapshot,
   SERVER_BASE
 } from '../api/api';
 import BossProfile from './BossProfile';
@@ -56,7 +59,9 @@ export default function AdminDashboard() {
   const [bossMsg, setBossMsg] = useState('');
   const [bossNameMsg, setBossNameMsg] = useState('');
   const [servicePhotoMsg, setServicePhotoMsg] = useState('');  const [instagramUrl, setInstagramUrl] = useState('');
-  const [instagramMsg, setInstagramMsg] = useState('');  const navigate = useNavigate();
+  const [instagramMsg, setInstagramMsg] = useState('');  const [snapshotCaption, setSnapshotCaption] = useState('');
+  const [snapshotMsg, setSnapshotMsg] = useState('');
+  const navigate = useNavigate();
 
   const adminName = localStorage.getItem('adminName');
 
@@ -67,12 +72,14 @@ export default function AdminDashboard() {
     }
     loadProfile();
     loadInstagramUrl();
+    loadSnapshots();
     loadProducts();
     loadContacts();
     loadReviews();
   }, []);
 
   const loadProducts = () => getProducts().then((res) => setProducts(res.data));
+  const loadSnapshots = () => getSnapshots().then((res) => setSnapshots(res.data || [])).catch(() => {});
   const loadContacts = () => getContacts().then((res) => setContacts(res.data)).catch(() => {});
   const loadReviews = () => {
     try {
@@ -193,6 +200,36 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSnapshotUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setSnapshotMsg('');
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('caption', snapshotCaption);
+      await createSnapshot(formData);
+      setSnapshotCaption('');
+      setSnapshotMsg('Snapshot uploaded ✓');
+      loadSnapshots();
+    } catch (err) {
+      setSnapshotMsg(err.response?.data?.message || 'Snapshot upload failed.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSnapshotDelete = async (id) => {
+    if (!confirm('Delete this snapshot?')) return;
+    try {
+      await deleteSnapshot(id);
+      loadSnapshots();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Delete failed');
+    }
+  };
+
   const handleServicePhotoChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -285,6 +322,12 @@ export default function AdminDashboard() {
               className={`px-4 py-2 rounded-full ${tab === 'leads' ? 'bg-accent text-white' : 'text-gray-400'}`}
             >
               Contact Leads ({contacts.length})
+            </button>
+            <button
+              onClick={() => setTab('snapshots')}
+              className={`px-4 py-2 rounded-full ${tab === 'snapshots' ? 'bg-accent text-white' : 'text-gray-400'}`}
+            >
+              Snapshots ({snapshots.length})
             </button>
           </div>
         </div>
@@ -501,6 +544,69 @@ export default function AdminDashboard() {
               <p className="text-gray-400 text-sm mt-2">{c.message}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {tab === 'snapshots' && (
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Upload Form */}
+          <div className="glass rounded-2xl p-6 space-y-4 h-fit">
+            <h3 className="text-white font-semibold text-lg">Add Progress Snapshot</h3>
+            
+            <div>
+              <label className="text-gray-400 text-sm block mb-2">Snapshot Image</label>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleSnapshotUpload}
+                className="w-full text-sm text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-accent file:text-white file:cursor-pointer"
+              />
+              {uploading && <p className="text-accent text-xs mt-1">Uploading…</p>}
+              {snapshotMsg && <p className="text-accent text-xs mt-1">{snapshotMsg}</p>}
+            </div>
+
+            <div>
+              <label className="text-gray-400 text-sm block mb-2">Caption (Optional)</label>
+              <input
+                type="text"
+                placeholder="e.g., Client transformation in 8 weeks"
+                value={snapshotCaption}
+                onChange={(e) => setSnapshotCaption(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500"
+              />
+            </div>
+          </div>
+
+          {/* Snapshots List */}
+          <div>
+            <h3 className="text-white font-semibold text-lg mb-4">Recent Snapshots ({snapshots.length})</h3>
+            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+              {snapshots.length === 0 && <p className="text-gray-400">No snapshots yet.</p>}
+              {snapshots.map((snapshot) => (
+                <div key={snapshot.id} className="glass rounded-lg overflow-hidden">
+                  <div className="aspect-video bg-slate-900 overflow-hidden">
+                    <img
+                      src={snapshot.image_url.startsWith('http://') || snapshot.image_url.startsWith('https://') ? snapshot.image_url : `${SERVER_BASE}${snapshot.image_url}`}
+                      alt="Snapshot"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-3">
+                    {snapshot.caption && <p className="text-sm text-gray-300 mb-2">{snapshot.caption}</p>}
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-gray-500">{new Date(snapshot.created_at).toLocaleDateString()}</p>
+                      <button
+                        onClick={() => handleSnapshotDelete(snapshot.id)}
+                        className="text-red-400 text-sm hover:text-red-300"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </section>

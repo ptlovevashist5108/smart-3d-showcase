@@ -40,6 +40,15 @@ const ensureSchema = async () => {
       )
     `);
 
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS snapshots (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        image_url VARCHAR(500) NOT NULL,
+        caption TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     const [crows] = await db.query("SHOW COLUMNS FROM contacts LIKE 'phone'");
     if (crows.length === 0) {
       await db.query("ALTER TABLE contacts ADD COLUMN phone VARCHAR(40) DEFAULT NULL");
