@@ -10,7 +10,7 @@ import AdminDashboard from './components/AdminDashboard';
 import BossProfile from './components/BossProfile';
 import ContactModal from './components/ContactModal';
 import { useEffect, useState } from 'react';
-import { getPublicProfile, SERVER_BASE } from './api/api';
+import { getPublicProfile, getInstagramUrl, SERVER_BASE } from './api/api';
 
 const defaultReviews = [
   {
@@ -38,8 +38,7 @@ function HomePage() {
   const [bossName, setBossName] = useState('Your Boss’s Name');
   const [bossTitle, setBossTitle] = useState('Founder & Head Coach');
   const [showModal, setShowModal] = useState(false);
-  const [testimonials, setTestimonials] = useState(defaultReviews);
-
+  const [testimonials, setTestimonials] = useState(defaultReviews);  const [instagramUrl, setInstagramUrl] = useState('');
   // Show modal on first visit unless user dismissed earlier
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -73,6 +72,21 @@ function HomePage() {
         ) : '';
         setBossPhoto(finalUrl);
         setBossName(admin.name || 'Your Boss’s Name');
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    getInstagramUrl()
+      .then((res) => {
+        if (!active) return;
+        setInstagramUrl(res.data.instagram_url || '');
       })
       .catch(() => {});
 
@@ -223,6 +237,18 @@ function HomePage() {
       </section>
 
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+        {instagramUrl && (
+          <a
+            href={instagramUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-xl shadow-[0_18px_40px_rgba(236,72,153,0.4)] transition duration-300 hover:scale-105"
+            aria-label="Follow on Instagram"
+            title="Follow on Instagram"
+          >
+            📷
+          </a>
+        )}
         <a
           href="https://wa.me/918860430381?text=Hi%20I%20want%20to%20book%20a%20consultation"
           target="_blank"

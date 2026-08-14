@@ -155,4 +155,35 @@ router.put('/boss-name', verifyToken, async (req, res) => {
   }
 });
 
+// @route   GET /api/auth/instagram
+// @desc    Get Instagram URL (public)
+router.get('/instagram', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT instagram_url FROM admins ORDER BY id LIMIT 1');
+    if (rows.length === 0) {
+      return res.json({ instagram_url: null });
+    }
+    res.json({ instagram_url: rows[0].instagram_url || null });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error fetching Instagram URL.' });
+  }
+});
+
+// @route   PUT /api/auth/instagram
+// @desc    Update current admin Instagram URL (admin only)
+router.put('/instagram', verifyToken, async (req, res) => {
+  try {
+    const { instagram_url } = req.body;
+    if (!instagram_url) {
+      return res.status(400).json({ message: 'instagram_url is required.' });
+    }
+    await db.query('UPDATE admins SET instagram_url = ? WHERE id = ?', [instagram_url, req.admin.id]);
+    res.json({ message: 'Instagram URL updated.', instagram_url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error updating Instagram URL.' });
+  }
+});
+
 module.exports = router;

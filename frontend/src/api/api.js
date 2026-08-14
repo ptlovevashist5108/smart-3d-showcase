@@ -61,6 +61,8 @@ export const getProfile = () => api.get('/auth/me');
 export const getPublicProfile = () => api.get('/auth/public/profile');
 export const updateBossPhoto = (boss_photo) => api.put('/auth/boss-photo', { boss_photo });
 export const updateBossName = (name) => api.put('/auth/boss-name', { name });
+export const getInstagramUrl = () => api.get('/auth/instagram');
+export const updateInstagramUrl = (instagram_url) => api.put('/auth/instagram', { instagram_url });
 
 export const uploadPhoto = (file) => {
   const formData = new FormData();

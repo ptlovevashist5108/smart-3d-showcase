@@ -94,13 +94,9 @@ export default function ProductShowcase({ limit }) {
 
               <p className="text-sm leading-7 text-gray-400">{p.description}</p>
 
-              <div className="flex items-center justify-between pt-2">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Starting at</p>
-                  <p className="mt-1 text-2xl font-black text-white">₹{Number(p.price).toLocaleString('en-IN')}</p>
-                </div>
+              <div className="flex items-center justify-end pt-2">
                 <button className="rounded-full bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-500/20 hover:text-pink-200">
-                  View Details
+                  Book Now
                 </button>
               </div>
             </div>

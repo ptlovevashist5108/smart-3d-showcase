@@ -25,6 +25,11 @@ const ensureSchema = async () => {
       await db.query('ALTER TABLE admins ADD COLUMN boss_photo VARCHAR(500) DEFAULT NULL');
     }
 
+    const [irows] = await db.query("SHOW COLUMNS FROM admins LIKE 'instagram_url'");
+    if (irows.length === 0) {
+      await db.query('ALTER TABLE admins ADD COLUMN instagram_url VARCHAR(500) DEFAULT NULL');
+    }
+
     await db.query(`
       CREATE TABLE IF NOT EXISTS admin_audit (
         id INT AUTO_INCREMENT PRIMARY KEY,

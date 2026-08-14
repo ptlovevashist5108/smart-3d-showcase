@@ -10,6 +10,8 @@ import {
   getProfile,
   updateBossPhoto,
   updateBossName,
+  getInstagramUrl,
+  updateInstagramUrl,
   SERVER_BASE
 } from '../api/api';
 import BossProfile from './BossProfile';
@@ -53,8 +55,8 @@ export default function AdminDashboard() {
   const [bossTitle, setBossTitle] = useState('Founder & Head Coach');
   const [bossMsg, setBossMsg] = useState('');
   const [bossNameMsg, setBossNameMsg] = useState('');
-  const [servicePhotoMsg, setServicePhotoMsg] = useState('');
-  const navigate = useNavigate();
+  const [servicePhotoMsg, setServicePhotoMsg] = useState('');  const [instagramUrl, setInstagramUrl] = useState('');
+  const [instagramMsg, setInstagramMsg] = useState('');  const navigate = useNavigate();
 
   const adminName = localStorage.getItem('adminName');
 
@@ -64,6 +66,7 @@ export default function AdminDashboard() {
       return;
     }
     loadProfile();
+    loadInstagramUrl();
     loadProducts();
     loadContacts();
     loadReviews();
@@ -90,7 +93,9 @@ export default function AdminDashboard() {
     setBossPhoto(photoUrl);
     setBossName(admin.name || 'Your Boss’s Name');
   }).catch(() => {});
-
+  const loadInstagramUrl = () => getInstagramUrl().then((res) => {
+    setInstagramUrl(res.data.instagram_url || '');
+  }).catch(() => {});
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminName');
@@ -171,6 +176,20 @@ export default function AdminDashboard() {
       setBossNameMsg('Boss name updated ✓');
     } catch (err) {
       setBossNameMsg(err.response?.data?.message || 'Boss name update failed.');
+    }
+  };
+
+  const handleInstagramUrlChange = async () => {
+    if (!instagramUrl.trim()) {
+      setInstagramMsg('Instagram URL cannot be empty.');
+      return;
+    }
+    setInstagramMsg('');
+    try {
+      await updateInstagramUrl(instagramUrl);
+      setInstagramMsg('Instagram URL updated ✓');
+    } catch (err) {
+      setInstagramMsg(err.response?.data?.message || 'Instagram URL update failed.');
     }
   };
 
@@ -280,6 +299,31 @@ export default function AdminDashboard() {
           message={bossMsg}
           nameMessage={bossNameMsg}
         />
+      </div>
+
+      <div className="rounded-3xl border border-white/10 bg-slate-950/50 p-6 shadow-2xl shadow-black/20 mb-8">
+        <h3 className="text-lg font-semibold text-white mb-4">Social Links</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Instagram Profile URL</label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                placeholder="https://instagram.com/yourprofile"
+                value={instagramUrl}
+                onChange={(e) => setInstagramUrl(e.target.value)}
+                className="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500"
+              />
+              <button
+                onClick={handleInstagramUrlChange}
+                className="px-6 py-2 rounded-lg bg-accent text-white font-semibold hover:bg-accent/80"
+              >
+                Save
+              </button>
+            </div>
+            {instagramMsg && <p className={`text-xs mt-2 ${instagramMsg.includes('✓') ? 'text-accent' : 'text-red-400'}`}>{instagramMsg}</p>}
+          </div>
+        </div>
       </div>
 
       {tab === 'products' && (
